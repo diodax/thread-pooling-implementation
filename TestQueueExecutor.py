@@ -31,14 +31,13 @@ def feed_the_workers(spacing):
 def feed_the_workers_prioritized(spacing):
     """ Simulate outside actors sending in work to do, request each url twice """
     random_priorities = [random.randrange(1, 11) for i in range(11)]
-    tuples = zip([10,10,10,10,10,10,10,10,10,1,10], URLS)
 
-    for value in tuples:
-        print("priority queue = ", value)
-        time.sleep(spacing)
-        q.put(value)
-
-    return "DONE FEEDING"
+    while True:
+        tuples = zip([10, 10, 10, 1, 10, 10, 10, 10, 10, 1, 10], URLS)
+        for value in tuples:
+            print("priority queue insertion = ", value)
+            time.sleep(spacing)
+            q.put(value)
 
 
 def load_url(tuple, timeout):
@@ -61,8 +60,10 @@ def concurrent_function():
         while future_to_url:
             # check for status of the futures which are currently working
             done, not_done = concurrent.futures.wait(
-                future_to_url, timeout=15,  # 0.25,
+                future_to_url, timeout=5.0,  # 0.25,
                 return_when=concurrent.futures.FIRST_COMPLETED)
+
+            print("Thread Status Finished:{} -- Unfinished:{} --  Queue Size: {}".format(len(done), len(not_done), q.qsize()))
 
             # if there is incoming work, start a new future
             while not q.empty():
@@ -71,7 +72,7 @@ def concurrent_function():
                 url = q_value[1]
                 # Start the load operation and mark the future with its URL
                 future_to_url[executor.submit(load_url, q_value, 60)] = url
-                print("STARTING REQUEST --> {} with priority {}.".format(q_value[1], q_value[0]))
+                # print("STARTING REQUEST --> {} with priority {}.".format(q_value[1], q_value[0]))
 
             # process any completed futures
             for future in done:
