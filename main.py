@@ -37,15 +37,14 @@ def load_url(url, priority, timeout):
 with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 
     # start a thread for the task_generator method, which sends work in through the queue
-    future_to_url = {executor.submit(task_generator, 0.5): 'FEEDER DONE'}
+    future_to_url = {executor.submit(task_generator, 0.6): 'FEEDER DONE'}
 
     while future_to_url:
         # check for status of the tasks which are currently working
         done, not_done = concurrent.futures.wait(
             future_to_url, timeout=5.0,
             return_when=concurrent.futures.FIRST_COMPLETED)
-        print("Finished threads: " + str(len(done)) +
-              ", unfinished threads: " + str(len(not_done)) +
+        print("Busy threads: " + str(len(executor._threads)) +
               ", queue size: " + str(priority_queue.qsize()))
 
         # if there is incoming work, start a new task(future)
