@@ -23,7 +23,6 @@ def feed_the_workers(spacing):
     while True:
         for priority, url in URLS:
             time.sleep(spacing)
-            # print('Current state of the queue (before push): [%s]' % ', '.join(map(str, priority_queue)))
             heapq.heappush(priority_queue, (priority, url))
 
 
@@ -35,11 +34,10 @@ def load_url(url, priority, timeout):
 
 
 # We can use a with statement to ensure threads are cleaned up promptly
-with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 
     # start a future for a thread which sends work in through the queue
-    future_to_url = {
-        executor.submit(feed_the_workers, 1.0): 'FEEDER DONE'}
+    future_to_url = {executor.submit(feed_the_workers, 1.0): 'FEEDER DONE'}
 
     while future_to_url:
         # check for status of the futures which are currently working
@@ -54,7 +52,6 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         while priority_queue:
 
             # fetch a url with its priority from the queue
-            # print('Current state of the queue (before pop): [%s]' % ', '.join(map(str, priority_queue)))
             priority, url = heapq.heappop(priority_queue)
 
             # Start the load operation and mark the future with its URL
